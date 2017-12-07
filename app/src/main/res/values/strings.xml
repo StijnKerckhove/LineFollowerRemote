@@ -1,8 +1,14 @@
 <resources>
-    <string name="app_name">LineFollowerRemote</string>
-
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="app_name">Line follower remote</string>
 
     <string name="action_settings">Settings</string>
+
+    <!-- Navigation drawer -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_title">Controller for line follower</string>
+    <string name="navigation_drawer_copyright">Developed by Stijn Kerckhove</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/LineFollowerRemote.iml" filepath="$PROJECT_DIR$/.idea/LineFollowerRemote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LineFollowerRemote.iml" filepath="$PROJECT_DIR$/LineFollowerRemote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
 </project>
