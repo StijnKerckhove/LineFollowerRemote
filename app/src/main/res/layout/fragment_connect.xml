@@ -1,13 +1,62 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingEnd="10dp"
+    android:paddingStart="10dp"
     tools:context="be.kerckhove.linefollowerremote.fragments.ConnectFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
+        android:id="@+id/connectedTo"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:text="@string/connectedTo"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="@dimen/title_textSize"
+        android:visibility="gone" />
 
-</FrameLayout>
+    <LinearLayout
+        android:id="@+id/connected"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:paddingBottom="10dp">
+
+        <TextView
+            android:id="@+id/connectedDevice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layout_weight="0.8"
+            android:padding="6dp"
+            android:paddingStart="12dp"
+            android:text="TextView\nTest"
+            android:textAppearance="?android:attr/textAppearanceListItemSmall" />
+
+        <Button
+            android:id="@+id/disconnect"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:layout_weight="0.4"
+            android:text="@string/disconnect" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/paired_devices"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="@dimen/title_textSize" />
+
+    <ListView
+        android:id="@+id/pairedDevicesListView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp" />
+
+</LinearLayout>

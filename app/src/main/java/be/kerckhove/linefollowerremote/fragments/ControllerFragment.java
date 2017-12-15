@@ -2,32 +2,43 @@ package be.kerckhove.linefollowerremote.fragments;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.ToggleButton;
 
+import java.util.Map;
+
+import be.kerckhove.linefollowerremote.BluetoothService;
 import be.kerckhove.linefollowerremote.R;
+import be.kerckhove.linefollowerremote.interfaces.Init;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ControllerFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ControllerFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class ControllerFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
+public class ControllerFragment extends Fragment implements Init {
+    @BindView(R.id.start)
+    ToggleButton start;
+    @BindView(R.id.seekBar)
+    SeekBar seekBar;
+    @BindView(R.id.currentSpeed)
+    TextView currentSpeed;
+    @BindView(R.id.debug)
+    Button debug;
+    @BindView(R.id.result)
+    TextView result;
+    private final Handler debugHandler = new Handler() {
+        @Override
+        public void handleMessage(Message message) {
+            result.append(new String((byte[]) message.obj));
+        }
+    };
     private OnFragmentInteractionListener mListener;
 
     public ControllerFragment() {
@@ -35,44 +46,74 @@ public class ControllerFragment extends Fragment {
         super();
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ControllerFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ControllerFragment newInstance(String param1, String param2) {
-        ControllerFragment fragment = new ControllerFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_controller, container, false);
+
+        View view = inflater.inflate(R.layout.fragment_controller, container, false);
+
+        ButterKnife.bind(this, view);
+
+
+        debug.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                BluetoothService.getInstance().send("debug\n", debugHandler);
+            }
+        });
+
+        start.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    BluetoothService.getInstance().send("start", null);
+                } else {
+                    BluetoothService.getInstance().send("stop", null);
+                }
+            }
+        });
+
+        currentSpeed.setText(Integer.toString(seekBar.getProgress()));
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                currentSpeed.setText(Integer.toString(i));
+                BluetoothService.getInstance().send("set speed " + i, null);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        return view;
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void initValues(Map<String, String> values) {
+        seekBar.setProgress(Integer.parseInt(values.get("speed")));
+
+        if (values.get("running").equals("1")) {
+            start.setChecked(true);
+        }
     }
 
     /**

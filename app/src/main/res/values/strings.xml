@@ -9,6 +9,17 @@
     <string name="navigation_drawer_title">Controller for line follower</string>
     <string name="navigation_drawer_copyright">Developed by Stijn Kerckhove</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="ok">OK</string>
+    <string name="paired_devices">Paired devices</string>
+
+    <string name="connectedTo">Connected to</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="kd">Kd</string>
+    <string name="ki">Ki</string>
+    <string name="kp">Kp</string>
+    <string name="pid_values">PID values</string>
+    <string name="cycle_time">Cycle time</string>
+    <string name="cycle_time_in_ms">Cycle time in ms</string>
+    <string name="calibration">Calibration</string>
+    <string name="calibrate">Calibrate</string>
 </resources>

@@ -4,10 +4,86 @@
     android:layout_height="match_parent"
     tools:context="be.kerckhove.linefollowerremote.fragments.ControllerFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="CONTROLLER" />
+        android:orientation="vertical"
+        android:paddingEnd="10dp"
+        android:paddingStart="10dp">
 
+        <TextView
+            android:id="@+id/driveTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:text="Drive"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="@dimen/title_textSize" />
+
+        <ToggleButton
+            android:id="@+id/start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_car"
+            android:text="Start robot"
+            android:textColor="@android:color/white"
+            android:theme="@style/MyToggle" />
+
+        <TextView
+            android:id="@+id/speedTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
+            android:text="Speed"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="@dimen/title_textSize" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <SeekBar
+                android:id="@+id/seekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_weight="1"
+                android:max="150"
+                android:minHeight="40dp"
+                android:progressBackgroundTint="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/currentSpeed"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="6"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/debug"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Debug" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/result"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
 </FrameLayout>

@@ -1,79 +1,122 @@
 package be.kerckhove.linefollowerremote.fragments;
 
-import android.app.Fragment;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import be.kerckhove.linefollowerremote.BluetoothService;
+import be.kerckhove.linefollowerremote.DialogFactory;
+import be.kerckhove.linefollowerremote.MainActivity;
 import be.kerckhove.linefollowerremote.R;
+import be.kerckhove.linefollowerremote.interfaces.Observer;
+import be.kerckhove.linefollowerremote.interfaces.Subject;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ConnectFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ConnectFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class ConnectFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+import static android.app.Activity.RESULT_CANCELED;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+public class ConnectFragment extends Fragment implements Observer {
+    @BindView(R.id.pairedDevicesListView)
+    ListView pairedDevicesListView;
+
+    @BindView(R.id.connectedTo)
+    TextView connectedTo;
+
+    @BindView(R.id.connectedDevice)
+    TextView connectedDevice;
+
+    @BindView(R.id.disconnect)
+    Button disconnect;
+
 
     private OnFragmentInteractionListener mListener;
-
-    public ConnectFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ConnectFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ConnectFragment newInstance(String param1, String param2) {
-        ConnectFragment fragment = new ConnectFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private BluetoothAdapter bluetoothAdapter;
+    private BluetoothService bluetoothService;
+    private ArrayAdapter<String> pairedDevicesAdapter;
+    private MainActivity activity;
+    private int REQUEST_ENABLE_BT = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        activity = (MainActivity) getActivity();
+
+        // If the adapter is null, then Bluetooth is not supported
+        if (bluetoothAdapter == null) {
+            FragmentActivity activity = getActivity();
+            Toast.makeText(activity, "Bluetooth is not available", Toast.LENGTH_LONG).show();
+            activity.finish();
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        if (!bluetoothAdapter.isEnabled()) {
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+        } else {
+            bluetoothService = BluetoothService.getInstance();
+            queryDevices();
+        }
+    }
+
+    private void queryDevices() {
+        pairedDevicesAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1);
+
+        for (BluetoothDevice device : bluetoothService.getPairedDevices()) {
+            pairedDevicesAdapter.add(device.getName() + "\n" + device.getAddress());
+        }
+
+        pairedDevicesListView.setAdapter(pairedDevicesAdapter);
+
+        pairedDevicesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                bluetoothService.connect(i, getContext());
+                registerObserver();
+            }
+        });
+    }
+
+    private void registerObserver() {
+        BluetoothService.getInstance().registerObserver(this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_connect, container, false);
+        ButterKnife.bind(this, view);
+
+        disconnect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                BluetoothService.getInstance().disconnect();
+                connectedTo.setVisibility(View.GONE);
+                getView().findViewById(R.id.connected).setVisibility(View.GONE);
+            }
+        });
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_connect, container, false);
+        return view;
     }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
 
     @Override
     public void onDetach() {
@@ -81,16 +124,39 @@ public class ConnectFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_CANCELED) {
+            DialogFactory.createOkDialog(getActivity(), "Bluetooth must be enabled to use this app", null).show();
+        }
+        else {
+            bluetoothService = BluetoothService.getInstance();
+            queryDevices();
+        }
+    }
+
+    public void changeDisconnectVisibility(boolean show) {
+        if(show) {
+            connectedTo.setVisibility(View.VISIBLE);
+            getView().findViewById(R.id.connected).setVisibility(View.VISIBLE);
+        }
+        else {
+            connectedTo.setVisibility(View.GONE);
+            getView().findViewById(R.id.connected).setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void update(Subject subject) {
+        if (BluetoothService.getInstance().getState() == BluetoothService.State.CONNECTED) {
+            BluetoothDevice device = BluetoothService.getInstance().getConnectedDevice();
+            connectedDevice.setText(device.getName() + "\n" + device.getAddress());
+            changeDisconnectVisibility(true);
+        }
+    }
+
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);

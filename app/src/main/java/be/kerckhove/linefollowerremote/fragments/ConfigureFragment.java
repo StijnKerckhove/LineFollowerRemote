@@ -2,70 +2,119 @@ package be.kerckhove.linefollowerremote.fragments;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.Map;
+
+import be.kerckhove.linefollowerremote.BluetoothService;
 import be.kerckhove.linefollowerremote.R;
+import be.kerckhove.linefollowerremote.interfaces.Init;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
+public class ConfigureFragment extends Fragment implements Init {
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ConfigureFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ConfigureFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class ConfigureFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private final Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message message) {
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+        }
+    };
 
+    @BindView(R.id.cycleTime)
+    EditText cycleTime;
+    @BindView(R.id.kp)
+    TextView kp;
+    @BindView(R.id.ki)
+    TextView ki;
+    @BindView(R.id.kd)
+    TextView kd;
+    @BindView(R.id.calibrate)
+    Button calibrate;
     private OnFragmentInteractionListener mListener;
 
     public ConfigureFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ConfigureFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ConfigureFragment newInstance(String param1, String param2) {
-        ConfigureFragment fragment = new ConfigureFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_configure, container, false);
+        View view = inflater.inflate(R.layout.fragment_configure, container, false);
+        ButterKnife.bind(this, view);
+
+        kp.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (i == EditorInfo.IME_ACTION_DONE) {
+                    BluetoothService.getInstance().send("set kp " + kp.getText(), null);
+                    Toast.makeText(getContext(), "Kp was updated", Toast.LENGTH_LONG).show();
+                }
+
+                return false;
+            }
+        });
+
+        ki.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (i == EditorInfo.IME_ACTION_DONE) {
+                    BluetoothService.getInstance().send("set ki " + ki.getText(), null);
+                    Toast.makeText(getContext(), "Ki was updated", Toast.LENGTH_LONG).show();
+                }
+
+                return false;
+            }
+        });
+
+        kd.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (i == EditorInfo.IME_ACTION_DONE) {
+                    BluetoothService.getInstance().send("set kd " + kd.getText(), null);
+                    Toast.makeText(getContext(), "Kd was updated", Toast.LENGTH_LONG).show();
+                }
+
+                return false;
+            }
+        });
+
+        cycleTime.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (i == EditorInfo.IME_ACTION_DONE) {
+                    BluetoothService.getInstance().send("set cycle " + cycleTime.getText(), null);
+                    Toast.makeText(getContext(), "Cycle time was updated", Toast.LENGTH_LONG).show();
+                }
+
+                return false;
+            }
+        });
+
+        calibrate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                BluetoothService.getInstance().send("calibrate", null);
+            }
+        });
+
+        return view;
     }
 
     @Override
@@ -74,16 +123,14 @@ public class ConfigureFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    @Override
+    public void initValues(Map<String, String> values) {
+        kp.setText(values.get("kp"));
+        ki.setText(values.get("ki"));
+        kd.setText(values.get("kd"));
+        cycleTime.setText(values.get("cycle"));
+    }
+
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
